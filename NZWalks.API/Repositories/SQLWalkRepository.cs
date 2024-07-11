@@ -19,14 +19,50 @@ namespace NZWalks.API.Repositories
             return walk;
         }
 
-        public async Task<List<Walk>> GetAllAsync()
+        public async Task<List<Walk>> GetAllAsync(string? filterOn = null, string? filterQuery = null, 
+            string? sortBy = null, bool isAscending = true, int pageNumber = 1, int pageSize = 1000)
         {
-            // Include is so it also looks up the navigation properties of Difficulty and Region.
-            return await dbContext.Walks.Include("Difficulty").Include("Region").ToListAsync();
+            // all results
+            // AsQueryable is so that u can then use the Where to query/filter results.
+            var walks = dbContext.Walks.Include("Difficulty").Include("Region").AsQueryable();
+
+            // filtering
+            if (!string.IsNullOrWhiteSpace(filterOn) && !string.IsNullOrWhiteSpace(filterQuery))
+            {
+                if (filterOn.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = walks.Where(x => x.Name.Contains(filterQuery));
+                }
+                if (filterOn.Equals("Description", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = walks.Where(x => x.Description.Contains(filterQuery));
+                }
+            }
+
+            // sorting 
+            if (!string.IsNullOrWhiteSpace(sortBy))
+            {
+                if (sortBy.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = isAscending ? walks.OrderBy(x => x.Name) : walks.OrderByDescending(x => x.Name);
+                }
+                else if (sortBy.Equals("Length", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = isAscending ? walks.OrderBy(x => x.LengthInKm) : walks.OrderByDescending(x => x.LengthInKm);
+                }
+            }
+
+            // pagination 
+            // it's always the same formula:
+            var skipResults = (pageNumber - 1) * pageSize;
+
+            // Skip to skip the first x results, Take to only take the number of records that u specify.
+            return await walks.Skip(skipResults).Take(pageSize).ToListAsync();
         }
 
         public async Task<Walk?> GetByIdAsync(Guid id)
         {
+            // Include is so it also looks up the navigation properties of Difficulty and Region.
             return await dbContext.Walks
                 .Include("Difficulty")
                 .Include("Region")

@@ -1,7 +1,11 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NZWalks.API.Data;
 using NZWalks.API.Mappings;
 using NZWalks.API.Repositories;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,13 +23,52 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<NZWalksDbContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("NZWalksConnectionString")));
 
+// inject 2nd DbContext for users and auth info.
+builder.Services.AddDbContext<NZWalksAuthDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("NZWalksAuthConnectionString")));
+
 // implement the IRegionRepository with the implementation of SQLRegionRepository.
 builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>();
 builder.Services.AddScoped<IWalkRepository, SQLWalkRepository>();
+builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 
 // inject autoMapper to be able to use it from the whole app
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
+// add identity services, roles, tokens, stores, and name the token provider.
+builder.Services.AddIdentityCore<IdentityUser>()
+    .AddRoles<IdentityRole>()
+    .AddTokenProvider<DataProtectorTokenProvider<IdentityUser>>("NZWalks")
+    .AddEntityFrameworkStores<NZWalksAuthDbContext>()
+    .AddDefaultTokenProviders();
+
+// configure password requirements for users.
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 1;
+});
+
+// add JWT authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters
+    {
+        // pick everything u want to validate
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        // say what would be valid, and get it from the appsettings.json like this:
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        // encode the key.
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    });
 
 // build the app.
 var app = builder.Build();
@@ -38,6 +81,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// add this for auth
+app.UseAuthentication();
 
 app.UseAuthorization();
 

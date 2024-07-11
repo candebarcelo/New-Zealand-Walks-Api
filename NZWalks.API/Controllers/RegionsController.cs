@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,8 @@ namespace NZWalks.API.Controllers
     // endpoint: https://localhost:7273/api/regions
     [Route("api/[controller]")]
     [ApiController]
+    // Authorize is added to make sure only authenticated users can access the api.
+    [Authorize]
     public class RegionsController : ControllerBase
     {
         private readonly NZWalksDbContext dbContext;
