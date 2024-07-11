@@ -14,10 +14,12 @@ namespace NZWalks.API.Data
 
         // shortcut to create properties: prop
         
-        // a DbSet represents entities in the db
+        // a DbSet represents entities in the db. so, these are the tables that
+        // are going to be created when running a migration.
         public DbSet<Difficulty> Difficulties { get; set; }
         public DbSet<Region> Regions { get; set; }
         public DbSet<Walk> Walks { get; set; }
+        public DbSet<Image> Images { get; set; }
 
         // seeding data in the db, from here. to do that: override OnModelCreating
         protected override void OnModelCreating(ModelBuilder modelBuilder)

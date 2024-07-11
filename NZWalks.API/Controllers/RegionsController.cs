@@ -8,6 +8,7 @@ using NZWalks.API.Data;
 using NZWalks.API.Models.Domain;
 using NZWalks.API.Models.DTO;
 using NZWalks.API.Repositories;
+using System.Text.Json;
 
 namespace NZWalks.API.Controllers
 {
@@ -22,13 +23,20 @@ namespace NZWalks.API.Controllers
         private readonly NZWalksDbContext dbContext;
         private readonly IRegionRepository regionRepository;
         private readonly IMapper mapper;
+        private readonly ILogger<RegionsController> logger;
 
         // inject the dbContext we created
-        public RegionsController(NZWalksDbContext dbContext, IRegionRepository regionRepository, IMapper mapper)
+        public RegionsController(
+            NZWalksDbContext dbContext, 
+            IRegionRepository regionRepository, 
+            IMapper mapper, 
+            ILogger<RegionsController> logger
+            )
         {
             this.dbContext = dbContext;
             this.regionRepository = regionRepository;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         // GET ALL REGIONS
@@ -40,8 +48,12 @@ namespace NZWalks.API.Controllers
         // Task for async functions. if not async, it's just the IActionResult.
         public async Task<IActionResult> GetAll()
         {
+            logger.LogInformation("GetAll Regions Action Method was invoked");
+
             // get data from database (domain models)
             var regionsDomain = await regionRepository.GetAllAsync();
+
+            logger.LogInformation($"Finished GetAll Regions request with data: {JsonSerializer.Serialize(regionsDomain)}");
 
             // map domain models to DTOs (convert) and
             // return DTOs. this is the best practice, to ensure separation of concerns,

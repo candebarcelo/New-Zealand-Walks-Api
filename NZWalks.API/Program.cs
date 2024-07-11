@@ -1,18 +1,38 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NZWalks.API.Data;
 using NZWalks.API.Mappings;
 using NZWalks.API.Repositories;
+using Serilog;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container (injected services).
 
+// set up the Serilog logger.
+// WriteTo.Console is the one that pops up when running the app on Visual Studio.
+// WriteTo.File is to write to a custom file. rollingInterval is when it'll start writing to
+// a new file. it can be each day, minute, year, never, etc.
+// MinimumLevel you can change depending on your current needs. There's information, debug,
+// warning, error...
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/NzWalks_Log.txt", rollingInterval: RollingInterval.Day)
+    .MinimumLevel.Information()
+    .CreateLogger();
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
+
 builder.Services.AddControllers();
+
+// this is for the image repository, so that we can create an http path in the
+// application that will let us access the images that we upload.
+builder.Services.AddHttpContextAccessor();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -65,6 +85,7 @@ builder.Services.AddDbContext<NZWalksAuthDbContext>(options =>
 builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>();
 builder.Services.AddScoped<IWalkRepository, SQLWalkRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddScoped<IImageRepository, LocalImageRepository>();
 
 // inject autoMapper to be able to use it from the whole app
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
@@ -120,6 +141,15 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+// this is so that we can serve static files, like the images.
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "Images")),
+    // this means that when we use the localhost:1234/Images, it'll redirect to the FileProvider url
+    // set above, and as it is a physical file provider, it'll let us serve static files.
+    RequestPath = "/Images"
+});
 
 app.MapControllers();
 
