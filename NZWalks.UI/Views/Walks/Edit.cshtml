@@ -30,20 +30,20 @@
 
         <div class="mt-3">
             <label class="form-label">Difficulty</label>
-            <select asp-for="Difficulty">
+            <select asp-for="Difficulty.Id">
                 @foreach (var difficulty in ViewBag.Difficulties)
                 {
-                    <option value="@difficulty">@difficulty.Name</option>
+                    <option value="@difficulty.Id">@difficulty.Name</option>
                 }
             </select>
         </div>
 
         <div class="mt-3">
             <label class="form-label">Region</label>
-            <select asp-for="Region">
+            <select asp-for="Region.Id">
                 @foreach (var region in ViewBag.Regions)
                 {
-                    <option value="@region">@region.Name</option>
+                    <option value="@region.Id">@region.Name</option>
                 }
             </select>
         </div>
