@@ -21,7 +21,6 @@ namespace NZWalks.UI.Controllers
 
             try
             {
-                
                 // create client so our UI can talk to the API.
                 var client = httpClientFactory.CreateClient();
 

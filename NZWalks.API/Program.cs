@@ -85,6 +85,7 @@ builder.Services.AddDbContext<NZWalksAuthDbContext>(options =>
 // implement the IRegionRepository with the implementation of SQLRegionRepository.
 builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>();
 builder.Services.AddScoped<IWalkRepository, SQLWalkRepository>();
+builder.Services.AddScoped<IDifficultyRepository, SQLDifficultyRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddScoped<IImageRepository, LocalImageRepository>();
 
