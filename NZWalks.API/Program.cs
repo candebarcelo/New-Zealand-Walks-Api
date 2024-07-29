@@ -158,3 +158,6 @@ app.UseStaticFiles(new StaticFileOptions
 app.MapControllers();
 
 app.Run();
+
+// api versioning: rewatch versioning section in the course, to support multiple api versions
+// when introducing breaking changes to our api, so clients can choose which version to use. 

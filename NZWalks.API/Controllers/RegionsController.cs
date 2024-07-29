@@ -44,7 +44,7 @@ namespace NZWalks.API.Controllers
         [HttpGet]
         // only authorize users with the Reader role. if multiple roles should be allowed,
         // separate by commas inside the string like "Reader,Writer".
-        [Authorize(Roles = "Reader")]
+        //[Authorize(Roles = "Reader")]
         // Task for async functions. if not async, it's just the IActionResult.
         public async Task<IActionResult> GetAll()
         {
@@ -72,7 +72,7 @@ namespace NZWalks.API.Controllers
         // param in the function. including the type is optional, but it will do a type
         // validation and send a 404 if the received type doesn't match the one in the code.
         [Route("{id:Guid}")]
-        [Authorize(Roles = "Reader")]
+        //[Authorize(Roles = "Reader")]
         public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
             var regionDomain = await regionRepository.GetByIdAsync(id);
@@ -97,7 +97,7 @@ namespace NZWalks.API.Controllers
         // checking if the ModelState.IsValid. This approach helps to keep the
         // controller code clean and DRY. 
         [ValidateModel]
-        [Authorize(Roles = "Writer")]
+        //[Authorize(Roles = "Writer")]
         // the params are in the body, not url.
         public async Task<IActionResult> Create([FromBody] AddRegionRequestDto addRegionRequestDto)
         {
@@ -120,7 +120,7 @@ namespace NZWalks.API.Controllers
         // PUT: https://localhost:7273/api/regions/{id}
         [HttpPut]
         [Route("{id:Guid}")]
-        [Authorize(Roles = "Writer")]
+        //[Authorize(Roles = "Writer")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDto updateRegionRequestDto)
         {
             // another way of validating the body instead of using the [ValidateModel] decorator:
@@ -162,7 +162,7 @@ namespace NZWalks.API.Controllers
         // DELETE: https://localhost:7273/api/regions/{id}
         [HttpDelete]
         [Route("{id:Guid}")]
-        [Authorize(Roles = "Writer")]
+        //[Authorize(Roles = "Writer")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
             var regionDomainModel = await regionRepository.DeleteAsync(id);
